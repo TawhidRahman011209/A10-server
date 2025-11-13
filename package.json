@@ -8,10 +8,11 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "firebase-admin": "^11.10.0",
     "helmet": "^6.0.1",
-    "mongoose": "^8.19.3",
-    "firebase-admin": "^11.10.0"
+    "mongoose": "^8.19.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

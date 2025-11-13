@@ -1,25 +1,23 @@
+
 import admin from "firebase-admin";
+import fs from "fs";
 
+const serviceAccount = JSON.parse(
+  fs.readFileSync(new URL("../firebase-service-account.json", import.meta.url))
+);
 
-export function initializeFirebaseAdmin() {
-  if (admin.apps.length) return;
-
-  try {
-   
-    admin.initializeApp();
-    console.log("✅ Firebase Admin initialized");
-  } catch (err) {
-    console.warn("⚠️ Firebase Admin not initialized. Provide GOOGLE_APPLICATION_CREDENTIALS to enable token verification.");
-  }
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
 
-export async function verifyToken(req, res, next) {
+export const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
-  const bearer = authHeader.split(" ")[0] === "Bearer";
-  const token = bearer ? authHeader.split(" ")[1] : null;
+  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
   if (!token) {
-    return res.status(401).json({ message: "Missing or invalid token" });
+    return res.status(401).json({ message: "Missing token" });
   }
 
   try {
@@ -27,7 +25,9 @@ export async function verifyToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("Firebase token verification failed:", err.message || err);
-    return res.status(401).json({ message: "Unauthorized - invalid token" });
+    console.error("Token verification failed:", err);
+    res.status(401).json({ message: "Invalid token" });
   }
-}
+};
+
+export default admin;

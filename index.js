@@ -1,41 +1,37 @@
+
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
-import challengesRoutes from "./routes/challenges.js";
-import tipsRoutes from "./routes/tips.js";
-import eventsRoutes from "./routes/events.js";
-import userChallengesRoutes from "./routes/user_challenges.js";
-import { initializeFirebaseAdmin } from "./middleware/firebase_admin.js";
+import challengeRoutes from "./routes/challenges.js";
+import tipRoutes from "./routes/tips.js";
+import eventRoutes from "./routes/events.js";
+import userChallengeRoutes from "./routes/user_challenges.js";
 
+dotenv.config();
 const app = express();
-const port = process.env.PORT || 5000;
-
-
-const MONGO_URI = "mongodb+srv://Assignment10:assignment10ten@cluster0.iivmfnp.mongodb.net/Assignment10?retryWrites=true&w=majority";
 
 app.use(cors());
-app.use(express.json({ limit: "5mb" }));
-app.use(helmet());
+app.use(express.json());
 
+app.get("/", (req, res) => res.send("EcoTrack API running"));
 
-initializeFirebaseAdmin();
+app.use("/api/challenges", challengeRoutes);
+app.use("/api/tips", tipRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/user-challenges", userChallengeRoutes);
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.message || "Server error" });
+});
+
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(err => {
+    console.error("MongoDB connection error:", err);
   });
-
-app.get("/", (req, res) => res.send("🌍 EcoTrack API is running"));
-
-app.use("/api/challenges", challengesRoutes);
-app.use("/api/tips", tipsRoutes);
-app.use("/api/events", eventsRoutes);
-app.use("/api/user-challenges", userChallengesRoutes);
-
-app.use((req, res) => res.status(404).json({ message: "Not found" }));
-
-app.listen(port, () => console.log(`🚀 Server running on port ${port}`));

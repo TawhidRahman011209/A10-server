@@ -1,15 +1,14 @@
+
 import mongoose from "mongoose";
 
-const TipSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    category: { type: String, default: "" },
-    author: { type: String, default: "" },
-    authorName: { type: String, default: "" },
-    upvotes: { type: Number, default: 0 }
-  },
-  { timestamps: true }
-);
+const tipSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  category: String,
+  author: String,
+  authorName: String,
+  upvotes: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
 
-export default mongoose.model("Tip", TipSchema);
+export default mongoose.model("Tip", tipSchema);

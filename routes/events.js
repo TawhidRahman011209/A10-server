@@ -1,24 +1,26 @@
+
 import express from "express";
 import Event from "../models/event.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const events = await Event.find().sort({ date: 1 }).limit(20);
+    const limit = parseInt(req.query.limit, 10) || 0;
+    const now = new Date();
+    const events = await Event.find({ date: { $gte: now } }).sort({ date: 1 }).limit(limit);
     res.json(events);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const event = new Event(req.body);
-    await event.save();
-    res.status(201).json(event);
+    const created = await Event.create(req.body);
+    res.status(201).json(created);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 });
 

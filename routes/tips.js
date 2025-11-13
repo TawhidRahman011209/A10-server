@@ -1,24 +1,26 @@
+
 import express from "express";
 import Tip from "../models/tip.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const tips = await Tip.find().sort({ createdAt: -1 }).limit(20);
+   
+    const limit = parseInt(req.query.limit, 10) || 0;
+    const tips = await Tip.find().sort({ createdAt: -1 }).limit(limit);
     res.json(tips);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const tip = new Tip(req.body);
-    await tip.save();
-    res.status(201).json(tip);
+    const created = await Tip.create(req.body);
+    res.status(201).json(created);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 });
 
