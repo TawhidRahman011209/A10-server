@@ -1,20 +1,20 @@
 import mongoose from "mongoose";
 
-const challengeSchema = new mongoose.Schema(
+const ChallengeSchema = new mongoose.Schema(
   {
-    title: String,
-    category: String,
-    description: String,
-    duration: Number,
-    target: String,
+    title: { type: String, required: true },
+    category: { type: String, required: true },
+    description: { type: String, default: "" },
+    duration: { type: Number, default: 0 },
+    target: { type: String, default: "" },
     participants: { type: Number, default: 0 },
-    impactMetric: String,
-    createdBy: String,
-    startDate: Date,
-    endDate: Date,
-    imageUrl: String,
+    impactMetric: { type: String, default: "" },
+    createdBy: { type: String, default: "" },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    imageUrl: { type: String, default: "" }
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Challenge", challengeSchema);
+export default mongoose.model("Challenge", ChallengeSchema);
