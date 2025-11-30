@@ -1,4 +1,3 @@
-
 import express from "express";
 import UserChallenge from "../models/user_challenge.js";
 
@@ -15,6 +14,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/user/:uid", async (req, res, next) => {
+  try {
+    const uid = req.params.uid;
+    const list = await UserChallenge.find({ userId: uid }).populate("challengeId");
+    res.json(list);
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.patch("/:id", async (req, res, next) => {
   try {

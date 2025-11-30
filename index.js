@@ -1,39 +1,52 @@
+
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import challengeRoutes from "./routes/challenges.js";
-import tipRoutes from "./routes/tips.js";
-import eventRoutes from "./routes/events.js";
-import userChallengeRoutes from "./routes/user_challenges.js";
-import userRoutes from "./routes/users.js";
+import cors from "cors";
 
+import challengesRouter from "./routes/challenges.js";
+import tipsRouter from "./routes/tips.js";
+import eventsRouter from "./routes/events.js";
+import userChallengesRouter from "./routes/user_challenges.js";
+import usersRouter from "./routes/users.js";
 
 dotenv.config();
-const app = express();
 
-app.use(cors());
+const app = express();
 app.use(express.json());
 
-app.get("/", (req, res) => res.send("EcoTrack API running"));
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
 
-app.use("/api/challenges", challengeRoutes);
-app.use("/api/tips", tipRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/user-challenges", userChallengeRoutes);
-app.use("/api/users", userRoutes);
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => {
+    console.error("DB error:", err);
+    process.exit(1);
+  });
+
+app.use("/api/challenges", challengesRouter);
+app.use("/api/tips", tipsRouter);
+app.use("/api/events", eventsRouter);
+app.use("/api/user-challenges", userChallengesRouter);
+app.use("/api/users", usersRouter);
+
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Not Found" });
+});
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ message: err.message || "Server error" });
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Server Error",
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(err => {
-    console.error("MongoDB connection error:", err);
-  });
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

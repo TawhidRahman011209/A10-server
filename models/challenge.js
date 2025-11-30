@@ -1,20 +1,77 @@
 
 import mongoose from "mongoose";
 
-const challengeSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  category: { type: String, required: true },
-  description: String,
-  duration: Number,
-  target: String,
-  participants: { type: Number, default: 0 },
-  impactMetric: String,
-  createdBy: String,
-  startDate: Date,
-  endDate: Date,
-  imageUrl: String,
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: Date
-});
+const { Schema } = mongoose;
 
-export default mongoose.model("Challenge", challengeSchema);
+const ChallengeSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: [
+        "Waste Reduction",
+        "Energy Conservation",
+        "Water Conservation",
+        "Sustainable Transport",
+        "Green Living",
+        "Other",
+      ],
+    },
+
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    duration: {
+      type: Number,
+      required: true,
+    },
+
+    target: {
+      type: String,
+      required: true,
+    },
+
+    participants: {
+      type: Number,
+      default: 0,
+    },
+
+    impactMetric: {
+      type: String,
+      required: true,
+    },
+
+    createdBy: {
+      type: String,
+      required: true,
+    },
+
+    startDate: {
+      type: Date,
+      required: true,
+    },
+
+    endDate: {
+      type: Date,
+      required: true,
+    },
+
+    imageUrl: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Challenge", ChallengeSchema);
