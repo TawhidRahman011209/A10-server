@@ -8,6 +8,7 @@ import eventRoutes from "./routes/events.js";
 import userChallengeRoutes from "./routes/user_challenges.js";
 import userRoutes from "./routes/users.js";
 
+
 dotenv.config();
 const app = express();
 
@@ -20,7 +21,7 @@ app.use("/api/challenges", challengeRoutes);
 app.use("/api/tips", tipRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/user-challenges", userChallengeRoutes);
-app.use("/api/users", userRoutes); // <-- ADD THIS
+app.use("/api/users", userRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

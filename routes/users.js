@@ -3,7 +3,6 @@ import User from "../models/user.js";
 
 const router = express.Router();
 
-// Check if user exists
 router.get("/check/:email", async (req, res) => {
   try {
     const email = req.params.email;
@@ -19,7 +18,6 @@ router.get("/check/:email", async (req, res) => {
   }
 });
 
-// Register (manual or google)
 router.post("/register", async (req, res) => {
   try {
     const { name, email, photoURL } = req.body;
