@@ -110,25 +110,27 @@ router.delete("/:id", verifyToken, async (req, res, next) => {
 });
 
 router.post("/join/:id", verifyToken, async (req, res, next) => {
-  
-
   try {
     const challengeId = req.params.id;
     const userId = req.user.uid;
 
     let userChallenge = await UserChallenge.findOne({ userId, challengeId });
 
-    if (!userChallenge) {
-      console.log("🟢 Creating NEW UserChallenge");
-      userChallenge = await UserChallenge.create({
-        userId,
-        challengeId,
-        status: "Ongoing",
-        progress: 0,
-      });
-    } else {
-      console.log("🟡 User already joined:", userChallenge);
+    if (userChallenge) {
+      return res.status(400).json({ message: "Already joined this challenge" });
     }
+
+    userChallenge = await UserChallenge.create({
+      userId,
+      challengeId,
+      status: "Ongoing",
+      progress: 0,
+    });
+
+    // ✅ increment participants
+    await Challenge.findByIdAndUpdate(challengeId, {
+      $inc: { participants: 1 },
+    });
 
     res.json({ userChallenge });
   } catch (err) {

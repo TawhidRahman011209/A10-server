@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/user.js";
+import { verifyToken } from "../middleware/firebase_admin.js";
 
 const router = express.Router();
 
@@ -18,9 +19,13 @@ router.get("/check/:email", async (req, res) => {
   }
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", verifyToken, async (req, res) => {
   try {
     const { name, email, photoURL } = req.body;
+
+    if (req.user.email !== email) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
 
     let user = await User.findOne({ email });
     if (user) return res.json({ success: true, user });
