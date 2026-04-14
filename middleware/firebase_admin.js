@@ -1,21 +1,21 @@
-// middleware/firebase_admin.js
 import admin from "firebase-admin";
+import fs from "fs";
 
-// Load service account
-let serviceAccount = null;
+let serviceAccount;
 
 if (!admin.apps.length) {
   try {
-    // OPTION 1: Using file (local dev)
-    serviceAccount = await import("../firebase-service-account.json", {
-      assert: { type: "json" }
-    });
+    // ✅ Read JSON manually (no import/assert issues)
+    const raw = fs.readFileSync("./firebase-service-account.json", "utf-8");
+    serviceAccount = JSON.parse(raw);
 
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount.default),
+      credential: admin.credential.cert(serviceAccount),
     });
+
+    console.log("✅ Firebase Admin initialized");
   } catch (e) {
-    console.error("Firebase service account load failed:", e);
+    console.error("❌ Firebase init failed:", e);
   }
 }
 
@@ -31,10 +31,11 @@ export const verifyToken = async (req, res, next) => {
 
   try {
     const decoded = await admin.auth().verifyIdToken(token);
-    req.user = decoded; // uid, email, name, picture
+
+    req.user = decoded; // uid, email
     next();
   } catch (err) {
-    console.error("Token verification failed:", err);
+    console.error("❌ Token verification failed:", err);
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };

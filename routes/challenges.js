@@ -5,13 +5,24 @@ import { verifyToken } from "../middleware/firebase_admin.js";
 
 const router = express.Router();
 
+//
+// ✅ GET ALL CHALLENGES
+//
 router.get("/", async (req, res, next) => {
   try {
-    const { category, startDate, endDate, minParticipants, maxParticipants, q } = req.query;
+    const {
+      category,
+      startDate,
+      endDate,
+      minParticipants,
+      maxParticipants,
+      q,
+    } = req.query;
+
     const filter = {};
 
     if (category) {
-      const cats = category.split(",").map(c => c.trim());
+      const cats = category.split(",").map((c) => c.trim());
       filter.category = { $in: cats };
     }
 
@@ -23,8 +34,10 @@ router.get("/", async (req, res, next) => {
 
     if (minParticipants || maxParticipants) {
       filter.participants = {};
-      if (minParticipants) filter.participants.$gte = parseInt(minParticipants);
-      if (maxParticipants) filter.participants.$lte = parseInt(maxParticipants);
+      if (minParticipants)
+        filter.participants.$gte = parseInt(minParticipants);
+      if (maxParticipants)
+        filter.participants.$lte = parseInt(maxParticipants);
     }
 
     if (q) {
@@ -41,24 +54,29 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+//
+// ✅ GET SINGLE CHALLENGE
+//
 router.get("/:id", async (req, res, next) => {
   try {
     const challenge = await Challenge.findById(req.params.id);
-    if (!challenge) return res.status(404).json({ message: "Not found" });
+    if (!challenge) {
+      return res.status(404).json({ message: "Not found" });
+    }
     res.json(challenge);
   } catch (err) {
     next(err);
   }
 });
 
-
+//
+// ✅ CREATE CHALLENGE
+//
 router.post("/", verifyToken, async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
-
     const data = {
       ...req.body,
-      createdBy: userEmail,
+      createdBy: req.user.email,
     };
 
     const created = await Challenge.create(data);
@@ -68,14 +86,18 @@ router.post("/", verifyToken, async (req, res, next) => {
   }
 });
 
+//
+// ✅ UPDATE CHALLENGE
+//
 router.patch("/:id", verifyToken, async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
-
     const existing = await Challenge.findById(req.params.id);
-    if (!existing) return res.status(404).json({ message: "Not found" });
 
-    if (existing.createdBy !== userEmail) {
+    if (!existing) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    if (existing.createdBy !== req.user.email) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
@@ -91,14 +113,18 @@ router.patch("/:id", verifyToken, async (req, res, next) => {
   }
 });
 
+//
+// ✅ DELETE CHALLENGE
+//
 router.delete("/:id", verifyToken, async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
-
     const existing = await Challenge.findById(req.params.id);
-    if (!existing) return res.status(404).json({ message: "Not found" });
 
-    if (existing.createdBy !== userEmail) {
+    if (!existing) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    if (existing.createdBy !== req.user.email) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
@@ -109,35 +135,53 @@ router.delete("/:id", verifyToken, async (req, res, next) => {
   }
 });
 
+//
+// ✅ JOIN CHALLENGE (FIXED)
+//
 router.post("/join/:id", verifyToken, async (req, res, next) => {
   try {
     const challengeId = req.params.id;
     const userId = req.user.uid;
 
-    let userChallenge = await UserChallenge.findOne({ userId, challengeId });
-
-    if (userChallenge) {
-      return res.status(400).json({ message: "Already joined this challenge" });
+    // 🔍 check challenge exists
+    const challenge = await Challenge.findById(challengeId);
+    if (!challenge) {
+      return res.status(404).json({ message: "Challenge not found" });
     }
 
-    userChallenge = await UserChallenge.create({
+    // 🔍 prevent duplicate join
+    const existing = await UserChallenge.findOne({
+      userId,
+      challengeId,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Already joined this challenge",
+      });
+    }
+
+    // ✅ create user challenge
+    const userChallenge = await UserChallenge.create({
       userId,
       challengeId,
       status: "Ongoing",
       progress: 0,
     });
 
-    // ✅ increment participants
+    // ✅ increment participants safely
     await Challenge.findByIdAndUpdate(challengeId, {
       $inc: { participants: 1 },
     });
 
-    res.json({ userChallenge });
+    res.json({
+      message: "Joined successfully",
+      userChallenge,
+    });
   } catch (err) {
-    console.log("❌ JOIN ERROR:", err);
+    console.error("❌ JOIN ERROR:", err);
     next(err);
   }
 });
-
 
 export default router;
