@@ -12,18 +12,8 @@ const ChallengeSchema = new Schema(
     },
 
     category: {
-      type: String,
-      required: true,
-      trim: true,
-      enum: [
-        "Waste Reduction",
-        "Energy Conservation",
-        "Water Conservation",
-        "Sustainable Transport",
-        "Green Living",
-        "Other",
-      ],
-    },
+  type: String
+},
 
     description: {
       type: String,
