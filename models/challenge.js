@@ -58,7 +58,7 @@ const ChallengeSchema = new Schema(
 
     imageUrl: {
       type: String,
-      required: true,
+      default: "https://via.placeholder.com/400"
     },
   },
   { timestamps: true }
