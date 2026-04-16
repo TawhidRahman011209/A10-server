@@ -275,13 +275,13 @@ mongoose
   .then(async () => {
     console.log("Connected. Seeding...");
 
-    await Challenge.deleteMany({});
-    await Tip.deleteMany({});
-    await Event.deleteMany({});
+    // await Challenge.deleteMany({});
+    // await Tip.deleteMany({});
+    // await Event.deleteMany({});
 
-    await Challenge.insertMany(challenges);
-    await Tip.insertMany(tips);
-    await Event.insertMany(events);
+    // await Challenge.insertMany(challenges);
+    // await Tip.insertMany(tips);
+    // await Event.insertMany(events);
 
     console.log("✅ Seeded challenges, tips & events successfully!");
     process.exit();

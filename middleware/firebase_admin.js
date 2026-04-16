@@ -1,13 +1,14 @@
 import admin from "firebase-admin";
-import fs from "fs";
 
 let serviceAccount;
 
 if (!admin.apps.length) {
   try {
-    // ✅ Read JSON manually (no import/assert issues)
-    const raw = fs.readFileSync("./firebase-service-account.json", "utf-8");
-    serviceAccount = JSON.parse(raw);
+    // ✅ Read from ENV instead of file
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+    // Fix newline issue in private key
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -30,9 +31,9 @@ export const verifyToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await admin.auth().verifyIdToken(token); // ✅ FIXED
 
-    req.user = decoded; // uid, email
+    req.user = decoded;
     next();
   } catch (err) {
     console.error("❌ Token verification failed:", err);
